@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/data/raw/ksh/crop/stadat-mez0071-19.1.2.4-en.csv" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/data/raw/ksh/crop/stadat-mez0072-19.1.2.5-en.csv" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/data/raw/ksh/crop/stadat-mez0073-19.1.2.6-en.csv" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/data/raw/ksh/fertilization/stadat-mez0093-19.1.2.25-en.csv" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/scripts/import_ksh_irrigation.py" charset="windows-1252" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>

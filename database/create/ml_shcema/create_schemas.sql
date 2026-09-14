@@ -1,0 +1,3 @@
+CREATE SCHEMA raw;
+CREATE SCHEMA processed;
+CREATE SCHEMA ml;

@@ -1,0 +1,9 @@
+county_name,crop,target_season_start_year,recent_yield_mean_t_ha,dry_hot_temperature_c,dry_hot_precipitation_mm,dry_hot_yield_t_ha,expected_temperature_c,expected_precipitation_mm,expected_yield_t_ha,wet_cool_temperature_c,wet_cool_precipitation_mm,wet_cool_yield_t_ha,scenario_spread_t_ha,warning_count,warnings
+Baranya,wheat,2026,6.132,12.368,512.82,5.84,12.074,607.39,5.837,11.586,753.01,5.761,0.079,1,dry_hot_yield_above_wet_cool
+Baranya,barley,2026,6.164,12.368,512.82,6.004,12.074,607.39,6.031,11.586,753.01,5.954,0.077,1,dry_hot_yield_above_wet_cool
+Borsod-Abaúj-Zemplén,wheat,2026,5.61,10.993,497.33,6.002,10.518,553.29,6.055,10.001,648.86,5.958,0.097,1,dry_hot_yield_above_wet_cool
+Borsod-Abaúj-Zemplén,barley,2026,5.556,10.993,497.33,6.051,10.518,553.29,6.078,10.001,648.86,5.969,0.109,1,dry_hot_yield_above_wet_cool
+Pest,maize,2027,4.76,16.89,320.83,3.622,16.535,398.62,4.353,16.101,461.86,6.345,2.723,1,large_scenario_spread
+Tolna,wheat,2026,6.226,12.349,500.76,6.108,12.1,553.3,6.232,11.548,672.38,5.982,0.25,1,dry_hot_yield_above_wet_cool
+Tolna,barley,2026,6.086,12.349,500.76,5.971,12.1,553.3,6.083,11.548,672.38,5.796,0.287,1,dry_hot_yield_above_wet_cool
+Vas,maize,2027,7.56,16.364,459.1,7.991,16.049,516.71,8.295,15.67,577.6,7.972,0.323,1,dry_hot_yield_above_wet_cool
