@@ -17,67 +17,118 @@ def calculate_weighted_scores(
         return None
 
     total_area = sum(
-        result["official_area_ha"]
-        for result in complete_results
+        result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     )
 
     if total_area <= 0:
         return None
 
     sustainability_score = sum(
-        result["sustainability_score"]
-        * result["official_area_ha"]
-        for result in complete_results
+        result[
+            "sustainability_score"
+        ]
+        * result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     ) / total_area
 
     nitrogen_score = sum(
-        result["nitrogen_score"]
-        * result["official_area_ha"]
-        for result in complete_results
+        result[
+            "nitrogen_score"
+        ]
+        * result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     ) / total_area
 
     soil_health_score = sum(
-        result["soil_health_score"]
-        * result["official_area_ha"]
-        for result in complete_results
+        result[
+            "soil_health_score"
+        ]
+        * result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     ) / total_area
 
     ghg_score = sum(
-        result["ghg_score"]
-        * result["official_area_ha"]
-        for result in complete_results
+        result[
+            "ghg_score"
+        ]
+        * result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     ) / total_area
 
     return {
         "sustainability_score":
             sustainability_score,
+
         "sustainability_score_100":
-            round(sustainability_score * 100),
+            round(
+                sustainability_score
+                * 100
+            ),
 
         "nitrogen_score":
             nitrogen_score,
+
         "nitrogen_score_100":
-            round(nitrogen_score * 100),
+            round(
+                nitrogen_score
+                * 100
+            ),
 
         "soil_health_score":
             soil_health_score,
+
         "soil_health_score_100":
-            round(soil_health_score * 100),
+            round(
+                soil_health_score
+                * 100
+            ),
 
         "ghg_score":
             ghg_score,
+
         "ghg_score_100":
-            round(ghg_score * 100),
+            round(
+                ghg_score
+                * 100
+            ),
     }
 
 
 def build_complete_season_result(
     sustainability_result,
 ):
-    parcel = sustainability_result["parcel"]
-    season = sustainability_result["season"]
+    parcel = (
+        sustainability_result[
+            "parcel"
+        ]
+    )
+
+    season = (
+        sustainability_result[
+            "season"
+        ]
+    )
+
     sustainability = (
-        sustainability_result["sustainability"]
+        sustainability_result[
+            "sustainability"
+        ]
     )
 
     return {
@@ -87,28 +138,47 @@ def build_complete_season_result(
             ],
 
         "parcel_id":
-            parcel["id"],
+            parcel[
+                "id"
+            ],
 
         "parcel_name":
-            parcel["name"],
+            parcel[
+                "name"
+            ],
 
         "official_area_ha":
-            parcel["official_area_ha"],
+            parcel[
+                "official_area_ha"
+            ],
+
+        "plan_name":
+            season[
+                "plan_name"
+            ],
 
         "season_start_year":
-            season["season_start_year"],
+            season[
+                "season_start_year"
+            ],
 
         "crop":
-            season["crop"],
+            season[
+                "crop"
+            ],
 
         "farming_strategy":
-            season["farming_strategy"],
+            season[
+                "farming_strategy"
+            ],
 
         "calculation_status":
             "complete",
 
         "yield_source":
-            sustainability["yield_source"],
+            sustainability[
+                "yield_source"
+            ],
 
         "scores": {
             "sustainability_score":
@@ -124,37 +194,52 @@ def build_complete_season_result(
             "nitrogen_score":
                 sustainability[
                     "nitrogen"
-                ]["nitrogen_score"],
+                ][
+                    "nitrogen_score"
+                ],
 
             "nitrogen_score_100":
                 round(
                     sustainability[
                         "nitrogen"
-                    ]["nitrogen_score"] * 100
+                    ][
+                        "nitrogen_score"
+                    ]
+                    * 100
                 ),
 
             "soil_health_score":
                 sustainability[
                     "soil"
-                ]["soil_health_score"],
+                ][
+                    "soil_health_score"
+                ],
 
             "soil_health_score_100":
                 round(
                     sustainability[
                         "soil"
-                    ]["soil_health_score"] * 100
+                    ][
+                        "soil_health_score"
+                    ]
+                    * 100
                 ),
 
             "ghg_score":
                 sustainability[
                     "ghg"
-                ]["ghg_score"],
+                ][
+                    "ghg_score"
+                ],
 
             "ghg_score_100":
                 round(
                     sustainability[
                         "ghg"
-                    ]["ghg_score"] * 100
+                    ][
+                        "ghg_score"
+                    ]
+                    * 100
                 ),
         },
     }
@@ -167,25 +252,44 @@ def build_incomplete_season_result(
 ):
     return {
         "parcel_season_id":
-            season["id"],
+            season[
+                "id"
+            ],
 
         "parcel_id":
-            parcel["id"],
+            parcel[
+                "id"
+            ],
 
         "parcel_name":
-            parcel["name"],
+            parcel[
+                "name"
+            ],
 
         "official_area_ha":
-            parcel["official_area_ha"],
+            parcel[
+                "official_area_ha"
+            ],
+
+        "plan_name":
+            season[
+                "plan_name"
+            ],
 
         "season_start_year":
-            season["season_start_year"],
+            season[
+                "season_start_year"
+            ],
 
         "crop":
-            season["crop"],
+            season[
+                "crop"
+            ],
 
         "farming_strategy":
-            season["farming_strategy"],
+            season[
+                "farming_strategy"
+            ],
 
         "calculation_status":
             "incomplete",
@@ -212,42 +316,67 @@ def load_farm_plan_context(
     active_parcels = [
         parcel
         for parcel in parcels
-        if parcel["is_active"]
+        if parcel[
+            "is_active"
+        ]
     ]
 
     parcels_by_id = {
-        parcel["id"]: parcel
-        for parcel in active_parcels
+        parcel[
+            "id"
+        ]:
+            parcel
+        for parcel
+        in active_parcels
     }
 
     seasons_by_id = {}
+
     season_ids_by_parcel = {}
 
     for parcel in active_parcels:
-        seasons = list_parcel_seasons(
-            parcel["id"],
-            user_id,
+        seasons = (
+            list_parcel_seasons(
+                parcel[
+                    "id"
+                ],
+                user_id,
+            )
         )
 
         season_ids_by_parcel[
-            parcel["id"]
+            parcel[
+                "id"
+            ]
         ] = []
 
         for season in seasons:
             seasons_by_id[
-                season["id"]
+                season[
+                    "id"
+                ]
             ] = season
 
             season_ids_by_parcel[
-                parcel["id"]
+                parcel[
+                    "id"
+                ]
             ].append(
-                season["id"]
+                season[
+                    "id"
+                ]
             )
 
     return {
-        "parcels": active_parcels,
-        "parcels_by_id": parcels_by_id,
-        "seasons_by_id": seasons_by_id,
+        "parcels":
+            active_parcels,
+
+        "parcels_by_id":
+            parcels_by_id,
+
+        "seasons_by_id":
+            seasons_by_id,
+
         "season_ids_by_parcel":
             season_ids_by_parcel,
     }
@@ -265,8 +394,12 @@ def validate_selected_seasons(
             "parcel_season_ids must be a list."
         )
 
-    if len(parcel_season_ids) != len(
-        set(parcel_season_ids)
+    if len(
+        parcel_season_ids
+    ) != len(
+        set(
+            parcel_season_ids
+        )
     ):
         raise ValueError(
             "Duplicate parcel season IDs "
@@ -287,10 +420,12 @@ def validate_selected_seasons(
                 "must be an integer."
             )
 
-        season = context[
-            "seasons_by_id"
-        ].get(
-            parcel_season_id
+        season = (
+            context[
+                "seasons_by_id"
+            ].get(
+                parcel_season_id
+            )
         )
 
         if season is None:
@@ -300,9 +435,16 @@ def validate_selected_seasons(
                 f"{parcel_season_id}"
             )
 
-        parcel_id = season["parcel_id"]
+        parcel_id = (
+            season[
+                "parcel_id"
+            ]
+        )
 
-        if parcel_id in selected_by_parcel:
+        if (
+            parcel_id
+            in selected_by_parcel
+        ):
             raise ValueError(
                 "Only one growing season can be "
                 "selected per parcel."
@@ -325,9 +467,11 @@ def calculate_farm_sustainability(
         user_id,
     )
 
-    context = load_farm_plan_context(
-        farm_id,
-        user_id,
+    context = (
+        load_farm_plan_context(
+            farm_id,
+            user_id,
+        )
     )
 
     selected_by_parcel = (
@@ -338,15 +482,23 @@ def calculate_farm_sustainability(
     )
 
     parcel_season_results = []
+
     complete_results = []
 
     parcels_without_season = []
+
     parcels_without_selection = []
 
     incomplete_season_count = 0
 
-    for parcel in context["parcels"]:
-        parcel_id = parcel["id"]
+    for parcel in context[
+        "parcels"
+    ]:
+        parcel_id = (
+            parcel[
+                "id"
+            ]
+        )
 
         available_season_ids = (
             context[
@@ -358,18 +510,22 @@ def calculate_farm_sustainability(
         )
 
         if not available_season_ids:
-            parcels_without_season.append({
-                "parcel_id":
-                    parcel_id,
+            parcels_without_season.append(
+                {
+                    "parcel_id":
+                        parcel_id,
 
-                "parcel_name":
-                    parcel["name"],
+                    "parcel_name":
+                        parcel[
+                            "name"
+                        ],
 
-                "official_area_ha":
-                    parcel[
-                        "official_area_ha"
-                    ],
-            })
+                    "official_area_ha":
+                        parcel[
+                            "official_area_ha"
+                        ],
+                }
+            )
 
             continue
 
@@ -380,33 +536,41 @@ def calculate_farm_sustainability(
         )
 
         if selected_season is None:
-            parcels_without_selection.append({
-                "parcel_id":
-                    parcel_id,
+            parcels_without_selection.append(
+                {
+                    "parcel_id":
+                        parcel_id,
 
-                "parcel_name":
-                    parcel["name"],
+                    "parcel_name":
+                        parcel[
+                            "name"
+                        ],
 
-                "official_area_ha":
-                    parcel[
-                        "official_area_ha"
-                    ],
+                    "official_area_ha":
+                        parcel[
+                            "official_area_ha"
+                        ],
 
-                "available_season_ids":
-                    available_season_ids,
-            })
+                    "available_season_ids":
+                        available_season_ids,
+                }
+            )
 
             continue
 
         result = (
             calculate_parcel_season_sustainability(
-                selected_season["id"],
+                selected_season[
+                    "id"
+                ],
                 user_id,
             )
         )
 
         if (
-            result["calculation_status"]
+            result[
+                "calculation_status"
+            ]
             == "incomplete"
         ):
             incomplete_season_count += 1
@@ -431,61 +595,74 @@ def calculate_farm_sustainability(
             season_result
         )
 
-        complete_results.append({
-            "official_area_ha":
-                parcel[
-                    "official_area_ha"
-                ],
+        complete_results.append(
+            {
+                "official_area_ha":
+                    parcel[
+                        "official_area_ha"
+                    ],
 
-            "sustainability_score":
-                season_result[
-                    "scores"
-                ][
-                    "sustainability_score"
-                ],
+                "sustainability_score":
+                    season_result[
+                        "scores"
+                    ][
+                        "sustainability_score"
+                    ],
 
-            "nitrogen_score":
-                season_result[
-                    "scores"
-                ][
-                    "nitrogen_score"
-                ],
+                "nitrogen_score":
+                    season_result[
+                        "scores"
+                    ][
+                        "nitrogen_score"
+                    ],
 
-            "soil_health_score":
-                season_result[
-                    "scores"
-                ][
-                    "soil_health_score"
-                ],
+                "soil_health_score":
+                    season_result[
+                        "scores"
+                    ][
+                        "soil_health_score"
+                    ],
 
-            "ghg_score":
-                season_result[
-                    "scores"
-                ][
-                    "ghg_score"
-                ],
-        })
+                "ghg_score":
+                    season_result[
+                        "scores"
+                    ][
+                        "ghg_score"
+                    ],
+            }
+        )
 
-    scores = calculate_weighted_scores(
-        complete_results
+    scores = (
+        calculate_weighted_scores(
+            complete_results
+        )
     )
 
     if not complete_results:
-        calculation_status = "unavailable"
+        calculation_status = (
+            "unavailable"
+        )
 
     elif (
         incomplete_season_count > 0
         or parcels_without_selection
         or parcels_without_season
     ):
-        calculation_status = "partial"
+        calculation_status = (
+            "partial"
+        )
 
     else:
-        calculation_status = "complete"
+        calculation_status = (
+            "complete"
+        )
 
     weighted_area_sum_ha = sum(
-        result["official_area_ha"]
-        for result in complete_results
+        result[
+            "official_area_ha"
+        ]
+        for result
+        in complete_results
     )
 
     return {
@@ -504,7 +681,9 @@ def calculate_farm_sustainability(
         "summary": {
             "active_parcel_count":
                 len(
-                    context["parcels"]
+                    context[
+                        "parcels"
+                    ]
                 ),
 
             "selected_season_count":

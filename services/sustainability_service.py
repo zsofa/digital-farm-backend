@@ -32,7 +32,8 @@ def find_latest_current_simulation(
 
     for simulation in simulations:
         if (
-            simulation["status"] == "current"
+            simulation["status"]
+            == "current"
             and simulation[
                 "expected_yield_t_ha"
             ]
@@ -83,7 +84,9 @@ def resolve_sustainability_yield(
         recent_yield_years,
     ) = calculate_recent_yield(
         county_name=county_name,
-        crop=parcel_season["crop"],
+        crop=parcel_season[
+            "crop"
+        ],
         target_season_start_year=(
             parcel_season[
                 "season_start_year"
@@ -126,13 +129,17 @@ def get_missing_inputs(
             "machine_use"
         )
 
-    if soil.get("soil_ph") is None:
+    if soil.get(
+        "soil_ph"
+    ) is None:
         missing_inputs.append(
             "soil_ph"
         )
 
     if (
-        soil.get("soil_soc_g_kg")
+        soil.get(
+            "soil_soc_g_kg"
+        )
         is None
     ):
         missing_inputs.append(
@@ -140,7 +147,9 @@ def get_missing_inputs(
         )
 
     if (
-        soil.get("soil_clay_pct")
+        soil.get(
+            "soil_clay_pct"
+        )
         is None
     ):
         missing_inputs.append(
@@ -166,6 +175,11 @@ def build_incomplete_result(
         "parcel_id":
             parcel_season[
                 "parcel_id"
+            ],
+
+        "plan_name":
+            parcel_season[
+                "plan_name"
             ],
 
         "season_start_year":
@@ -195,21 +209,29 @@ def calculate_parcel_season_sustainability(
         user_id,
     )
 
-    parcel_season = load_parcel_season(
-        parcel_season_id
+    parcel_season = (
+        load_parcel_season(
+            parcel_season_id
+        )
     )
 
-    parcel_id = parcel_season[
-        "parcel_id"
-    ]
+    parcel_id = (
+        parcel_season[
+            "parcel_id"
+        ]
+    )
 
-    county_name = resolve_parcel_county(
-        parcel_id
+    county_name = (
+        resolve_parcel_county(
+            parcel_id
+        )
     )
 
     try:
-        soil = resolve_parcel_soil(
-            parcel_id
+        soil = (
+            resolve_parcel_soil(
+                parcel_id
+            )
         )
 
     except ValueError:
@@ -222,9 +244,11 @@ def calculate_parcel_season_sustainability(
             ],
         )
 
-    missing_inputs = get_missing_inputs(
-        parcel_season,
-        soil,
+    missing_inputs = (
+        get_missing_inputs(
+            parcel_season,
+            soil,
+        )
     )
 
     if missing_inputs:
@@ -241,9 +265,11 @@ def calculate_parcel_season_sustainability(
     )
 
     result = calculate_sustainability(
-        crop=parcel_season[
-            "crop"
-        ],
+        crop=(
+            parcel_season[
+                "crop"
+            ]
+        ),
 
         farming_strategy=(
             parcel_season[
@@ -251,9 +277,11 @@ def calculate_parcel_season_sustainability(
             ]
         ),
 
-        machine_use=parcel_season[
-            "machine_use"
-        ],
+        machine_use=(
+            parcel_season[
+                "machine_use"
+            ]
+        ),
 
         fertilizer_type=(
             parcel_season[
@@ -267,17 +295,23 @@ def calculate_parcel_season_sustainability(
             ]
         ),
 
-        soil_ph=soil[
-            "soil_ph"
-        ],
+        soil_ph=(
+            soil[
+                "soil_ph"
+            ]
+        ),
 
-        soil_soc_g_kg=soil[
-            "soil_soc_g_kg"
-        ],
+        soil_soc_g_kg=(
+            soil[
+                "soil_soc_g_kg"
+            ]
+        ),
 
-        soil_clay_pct=soil[
-            "soil_clay_pct"
-        ],
+        soil_clay_pct=(
+            soil[
+                "soil_clay_pct"
+            ]
+        ),
 
         expected_yield_t_ha=(
             yield_context[
@@ -318,6 +352,11 @@ def calculate_parcel_season_sustainability(
         },
 
         "season": {
+            "plan_name":
+                parcel_season[
+                    "plan_name"
+                ],
+
             "season_start_year":
                 parcel_season[
                     "season_start_year"
@@ -351,10 +390,14 @@ def calculate_parcel_season_sustainability(
 
         "soil": {
             "source":
-                soil["source"],
+                soil[
+                    "source"
+                ],
 
             "soil_ph":
-                soil["soil_ph"],
+                soil[
+                    "soil_ph"
+                ],
 
             "soil_soc_g_kg":
                 soil[

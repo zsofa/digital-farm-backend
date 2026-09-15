@@ -30,6 +30,33 @@ ALLOWED_FERTILIZERS = {
     "CAN",
 }
 
+MAX_PLAN_NAME_LENGTH = 80
+
+
+def validate_plan_name(value):
+    if not isinstance(
+        value,
+        str,
+    ):
+        raise ValueError(
+            "Plan name is required."
+        )
+
+    plan_name = value.strip()
+
+    if not plan_name:
+        raise ValueError(
+            "Plan name is required."
+        )
+
+    if len(plan_name) > MAX_PLAN_NAME_LENGTH:
+        raise ValueError(
+            "Plan name cannot exceed "
+            f"{MAX_PLAN_NAME_LENGTH} characters."
+        )
+
+    return plan_name
+
 
 def validate_management_data(data):
     farming_strategy = data.get(
@@ -151,6 +178,10 @@ def validate_create_data(data):
             "Season start year is determined automatically."
         )
 
+    plan_name = validate_plan_name(
+        data.get("plan_name")
+    )
+
     crop = data.get(
         "crop"
     )
@@ -167,30 +198,56 @@ def validate_create_data(data):
     )
 
     return {
-        "crop": crop,
+        "plan_name":
+            plan_name,
+
+        "crop":
+            crop,
+
         **management,
     }
 
 
 def season_row_to_dict(row):
     return {
-        "id": row[0],
-        "parcel_id": row[1],
-        "season_start_year": row[2],
-        "crop": row[3],
-        "farming_strategy": row[4],
-        "is_irrigated": row[5],
-        "machine_use": row[6],
-        "fertilizer_type": row[7],
+        "id":
+            row[0],
+
+        "parcel_id":
+            row[1],
+
+        "plan_name":
+            row[2],
+
+        "season_start_year":
+            row[3],
+
+        "crop":
+            row[4],
+
+        "farming_strategy":
+            row[5],
+
+        "is_irrigated":
+            row[6],
+
+        "machine_use":
+            row[7],
+
+        "fertilizer_type":
+            row[8],
+
         "fertilizer_quantity_kg_ha": (
-            float(row[8])
-            if row[8] is not None
+            float(row[9])
+            if row[9] is not None
             else None
         ),
+
         "created_at":
-            row[9].isoformat(),
-        "updated_at":
             row[10].isoformat(),
+
+        "updated_at":
+            row[11].isoformat(),
     }
 
 
@@ -228,10 +285,12 @@ def ensure_parcel_active(
         )
 
 
-def ensure_unique_season(
+def ensure_unique_plan_name(
     parcel_id,
     season_start_year,
     crop,
+    plan_name,
+    exclude_season_id=None,
 ):
     query = """
         SELECT id
@@ -239,6 +298,26 @@ def ensure_unique_season(
         WHERE parcel_id = %s
           AND season_start_year = %s
           AND crop = %s
+          AND LOWER(plan_name) = LOWER(%s)
+    """
+
+    params = [
+        parcel_id,
+        season_start_year,
+        crop,
+        plan_name,
+    ]
+
+    if exclude_season_id is not None:
+        query += """
+          AND id <> %s
+        """
+
+        params.append(
+            exclude_season_id
+        )
+
+    query += """
         LIMIT 1;
     """
 
@@ -248,11 +327,7 @@ def ensure_unique_season(
         with connection.cursor() as cursor:
             cursor.execute(
                 query,
-                (
-                    parcel_id,
-                    season_start_year,
-                    crop,
-                ),
+                tuple(params),
             )
 
             row = cursor.fetchone()
@@ -262,9 +337,8 @@ def ensure_unique_season(
 
     if row is not None:
         raise ValueError(
-            "A growing plan for the next "
-            f"{crop} season already exists "
-            "on this parcel."
+            "A plan with this name already exists "
+            "for this crop and season."
         )
 
 
@@ -288,7 +362,13 @@ def create_parcel_season(
         )
     )
 
-    crop = validated["crop"]
+    crop = validated[
+        "crop"
+    ]
+
+    plan_name = validated[
+        "plan_name"
+    ]
 
     target_season = (
         resolve_next_full_season(
@@ -302,15 +382,17 @@ def create_parcel_season(
         ]
     )
 
-    ensure_unique_season(
+    ensure_unique_plan_name(
         parcel_id,
         season_start_year,
         crop,
+        plan_name,
     )
 
     query = """
         INSERT INTO app.parcel_season (
             parcel_id,
+            plan_name,
             season_start_year,
             crop,
             farming_strategy,
@@ -327,11 +409,13 @@ def create_parcel_season(
             %s,
             %s,
             %s,
+            %s,
             %s
         )
         RETURNING
             id,
             parcel_id,
+            plan_name,
             season_start_year,
             crop,
             farming_strategy,
@@ -351,6 +435,7 @@ def create_parcel_season(
                 query,
                 (
                     parcel_id,
+                    plan_name,
                     season_start_year,
                     crop,
                     validated[
@@ -400,6 +485,7 @@ def get_parcel_season(
         SELECT
             id,
             parcel_id,
+            plan_name,
             season_start_year,
             crop,
             farming_strategy,
@@ -454,6 +540,7 @@ def list_parcel_seasons(
         SELECT
             id,
             parcel_id,
+            plan_name,
             season_start_year,
             crop,
             farming_strategy,
@@ -467,7 +554,8 @@ def list_parcel_seasons(
         WHERE parcel_id = %s
         ORDER BY
             season_start_year DESC,
-            crop;
+            crop,
+            plan_name;
     """
 
     connection = get_connection()
@@ -506,15 +594,30 @@ def update_parcel_season(
         season["parcel_id"]
     )
 
+    plan_name = validate_plan_name(
+        data.get("plan_name")
+    )
+
     management = (
         validate_management_data(
             data
         )
     )
 
+    ensure_unique_plan_name(
+        season["parcel_id"],
+        season["season_start_year"],
+        season["crop"],
+        plan_name,
+        exclude_season_id=(
+            parcel_season_id
+        ),
+    )
+
     query = """
         UPDATE app.parcel_season
         SET
+            plan_name = %s,
             farming_strategy = %s,
             is_irrigated = %s,
             machine_use = %s,
@@ -525,6 +628,7 @@ def update_parcel_season(
         RETURNING
             id,
             parcel_id,
+            plan_name,
             season_start_year,
             crop,
             farming_strategy,
@@ -543,6 +647,7 @@ def update_parcel_season(
             cursor.execute(
                 query,
                 (
+                    plan_name,
                     management[
                         "farming_strategy"
                     ],
@@ -665,6 +770,7 @@ def get_parcel_season_details(
 
     return {
         **season,
+
         "simulations":
             simulations,
     }
