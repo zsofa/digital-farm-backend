@@ -1,0 +1,54 @@
+{
+  "version": "20260929T191958104775Z",
+  "created_at_utc": "2026-09-29T19:19:58.104775+00:00",
+  "model_type": "scenario_xgboost_actual_weather",
+  "model_variant": "v2",
+  "feature_columns": [
+    "crop",
+    "soil_ph",
+    "soil_soc_g_kg",
+    "soil_clay_pct",
+    "season_temperature_c",
+    "season_precipitation_mm",
+    "recent_yield_mean_t_ha"
+  ],
+  "target_column": "average_yield_t_ha",
+  "training_year_min": 2005,
+  "training_year_max": 2025,
+  "training_records": 1197,
+  "county_count": 19,
+  "crops": [
+    "barley",
+    "maize",
+    "wheat"
+  ],
+  "parameters": {
+    "n_estimators": 200,
+    "learning_rate": 0.05,
+    "max_depth": 2,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 5,
+    "reg_lambda": 5.0
+  },
+  "random_state": 42,
+  "objective": "reg:squarederror",
+  "training_data_sha256": "728293d10283d20eed2d4453a39e41f55533e77e2144ffd219f1987388b5fcbf",
+  "versions": {
+    "python": "3.14.0",
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "scikit_learn": "1.9.0",
+    "xgboost": "3.4.1",
+    "joblib": "1.5.3"
+  },
+  "intended_use": "Conditional yield estimation for supplied weather scenarios.",
+  "limitations": [
+    "This full-data fit is not an independent evaluation.",
+    "Scenario outputs are not calibrated prediction intervals.",
+    "County-level evaluation does not validate parcel accuracy.",
+    "Historical input release dates have not been verified."
+  ],
+  "serialization_check_max_difference_t_ha": 0.0,
+  "artifact_sha256": "caa09683a100a95f1a8d00f7fb58b14910f282cedaa515be81e3bfef396240a5"
+}

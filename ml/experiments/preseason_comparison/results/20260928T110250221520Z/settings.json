@@ -1,0 +1,107 @@
+{
+  "features": [
+    "crop",
+    "soil_ph",
+    "soil_soc_g_kg",
+    "soil_clay_pct",
+    "expected_season_temperature_c",
+    "expected_season_precipitation_mm",
+    "recent_yield_mean_t_ha"
+  ],
+  "target": "average_yield_t_ha",
+  "folds": [
+    [
+      2014,
+      2015,
+      2016
+    ],
+    [
+      2016,
+      2017,
+      2018
+    ],
+    [
+      2018,
+      2019,
+      2020
+    ],
+    [
+      2020,
+      2021,
+      2022
+    ]
+  ],
+  "reserved_test_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "v2_parameters": {
+    "n_estimators": 200,
+    "learning_rate": 0.05,
+    "max_depth": 2,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 5,
+    "reg_lambda": 5.0
+  },
+  "best_expected_xgboost_parameters": {
+    "colsample_bytree": 1.0,
+    "learning_rate": 0.05,
+    "max_depth": 3,
+    "min_child_weight": 1,
+    "n_estimators": 400,
+    "reg_lambda": 5.0,
+    "subsample": 0.8
+  },
+  "best_ridge_parameters": {
+    "alpha": 0.01
+  },
+  "xgboost_grid": {
+    "n_estimators": [
+      200,
+      400
+    ],
+    "learning_rate": [
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3,
+      4
+    ],
+    "subsample": [
+      0.8,
+      1.0
+    ],
+    "colsample_bytree": [
+      0.8,
+      1.0
+    ],
+    "min_child_weight": [
+      1,
+      5
+    ],
+    "reg_lambda": [
+      1.0,
+      5.0
+    ]
+  },
+  "ridge_alphas": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "selection_metric": "mean validation MAE",
+  "tie_breakers": [
+    "mean validation RMSE",
+    "MAE std"
+  ],
+  "independent_test": false,
+  "publication_delays_modelled": false,
+  "weather_source": "Historical application expected scenario, reconstructed separately for each target season"
+}

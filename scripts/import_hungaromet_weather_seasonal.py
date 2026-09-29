@@ -26,12 +26,15 @@ EXPECTED_COUNTIES = 19
 
 MIN_SEASON_YEAR = 1971
 
+# Season starts and finishes in the same year
 MAX_MAIZE_SEASON_YEAR = 2025
+# Season starts and finishes in different year
 MAX_WINTER_CROP_SEASON_YEAR = 2024
 
 EXPECTED_RECORDS = 3097
 
 
+# loading gridpoint county mapping
 def load_mapping():
     grid_to_county = {}
 
@@ -94,6 +97,7 @@ MAPPING_FILE,
     return grid_to_county
 
 
+# Returns a list, all counties have their own list of grid value line positions
 def build_county_positions(
     header_grid_indices,
     grid_to_county
@@ -195,7 +199,7 @@ def get_seasons_for_date(
 
     return seasons
 
-
+# count days of seasons per crop
 def expected_days(
     crop,
     season_start_year
@@ -232,7 +236,9 @@ def process_weather_file(
     grid_to_county,
     aggregation
 ):
+    # collects the given season's daily values
     totals = defaultdict(float)
+    # counts them
     day_counts = defaultdict(int)
 
     print(
@@ -278,7 +284,7 @@ def process_weather_file(
             if not line.strip():
                 continue
 
-            # HungaroMet date field uses the first 8 characters
+            # HungaroMet date field uses the first 8 characters 20250517 - year, month, day
             year = int(
                 line[0:4]
             )
@@ -291,6 +297,7 @@ def process_weather_file(
                 line[6:8].strip()
             )
 
+            # find the season where the day belongs to
             seasons = (
                 get_seasons_for_date(
                     year,
@@ -325,12 +332,12 @@ def process_weather_file(
                     f"{EXPECTED_GRIDPOINTS}, "
                     f"found {len(values)}."
                 )
-
+            # if the data is very negative, like -999 - does not count in avg
             values[
                 values <= -900
             ] = np.nan
 
-            # First aggregate gridpoints to daily county values
+            # First aggregate gridpoints to daily county values, Nan
             for (
                 county_name,
                 positions
@@ -350,7 +357,7 @@ def process_weather_file(
                         f"for {county_name} on "
                         f"{year}-{month:02d}-{day:02d}."
                     )
-
+                # daily county mean
                 daily_mean = float(
                     np.nanmean(
                         county_values
@@ -373,7 +380,7 @@ def process_weather_file(
                     )
 
                     day_counts[key] += 1
-
+    # county + crop + season - check if a day is missing from the file
     validate_day_counts(
         file_path,
         day_counts

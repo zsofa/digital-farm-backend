@@ -1,0 +1,8 @@
+column,rows,mismatches,max_difference
+soil_ph,1026,0,0.0
+soil_soc_g_kg,1026,0,0.0
+soil_clay_pct,1026,0,0.0
+expected_season_temperature_c,1026,0,0.0
+expected_season_precipitation_mm,1026,0,0.0
+recent_yield_mean_t_ha,1026,0,0.0
+average_yield_t_ha,1026,0,0.0

@@ -1,0 +1,164 @@
+{
+  "feature_columns": [
+    "crop",
+    "soil_ph",
+    "soil_soc_g_kg",
+    "soil_clay_pct",
+    "recent_yield_mean_t_ha",
+    "temperature_prev_09",
+    "precipitation_prev_09",
+    "temperature_prev_10",
+    "precipitation_prev_10",
+    "temperature_prev_11",
+    "precipitation_prev_11",
+    "temperature_prev_12",
+    "precipitation_prev_12",
+    "temperature_current_01",
+    "precipitation_current_01",
+    "temperature_current_02",
+    "precipitation_current_02",
+    "temperature_current_03",
+    "precipitation_current_03",
+    "temperature_current_04",
+    "precipitation_current_04",
+    "temperature_current_05",
+    "precipitation_current_05",
+    "temperature_current_06",
+    "precipitation_current_06",
+    "temperature_current_07",
+    "precipitation_current_07",
+    "temperature_current_08",
+    "precipitation_current_08",
+    "temperature_current_09",
+    "precipitation_current_09",
+    "temperature_current_10",
+    "precipitation_current_10"
+  ],
+  "parameter_grid": {
+    "n_estimators": [
+      200,
+      400
+    ],
+    "learning_rate": [
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3,
+      4
+    ],
+    "subsample": [
+      0.8,
+      1.0
+    ],
+    "colsample_bytree": [
+      0.8,
+      1.0
+    ],
+    "min_child_weight": [
+      1,
+      5
+    ],
+    "reg_lambda": [
+      1.0,
+      5.0
+    ]
+  },
+  "reserved_test_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "selection_order": [
+    "mean_mae",
+    "mean_rmse",
+    "std_mae"
+  ],
+  "folds": [
+    {
+      "train_years": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014
+      ],
+      "validation_years": [
+        2015,
+        2016
+      ]
+    },
+    {
+      "train_years": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016
+      ],
+      "validation_years": [
+        2017,
+        2018
+      ]
+    },
+    {
+      "train_years": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018
+      ],
+      "validation_years": [
+        2019,
+        2020
+      ]
+    },
+    {
+      "train_years": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ],
+      "validation_years": [
+        2021,
+        2022
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "reference_run": "C:\\Users\\hzsof\\Documents\\SZE-GIVK Mérnökinfó\\2025-2026-2\\Szakdolgozat\\digital-farm\\digital-farm-backend\\ml\\experiments\\preseason_comparison\\results\\20260928T110250221520Z",
+  "feature_groups": {
+    "base": [
+      "crop",
+      "recent_yield_mean_t_ha"
+    ],
+    "base_soil": [
+      "crop",
+      "soil_ph",
+      "soil_soc_g_kg",
+      "soil_clay_pct",
+      "recent_yield_mean_t_ha"
+    ],
+    "base_weather": [
+      "crop",
+      "expected_season_temperature_c",
+      "expected_season_precipitation_mm",
+      "recent_yield_mean_t_ha"
+    ],
+    "full": [
+      "crop",
+      "soil_ph",
+      "soil_soc_g_kg",
+      "soil_clay_pct",
+      "expected_season_temperature_c",
+      "expected_season_precipitation_mm",
+      "recent_yield_mean_t_ha"
+    ]
+  },
+  "xgboost_parameters": {
+    "colsample_bytree": 1.0,
+    "learning_rate": 0.05,
+    "max_depth": 3,
+    "min_child_weight": 1,
+    "n_estimators": 400,
+    "reg_lambda": 5.0,
+    "subsample": 0.8
+  },
+  "ridge_alpha": 0.01,
+  "folds": [
+    [
+      2014,
+      2015,
+      2016
+    ],
+    [
+      2016,
+      2017,
+      2018
+    ],
+    [
+      2018,
+      2019,
+      2020
+    ],
+    [
+      2020,
+      2021,
+      2022
+    ]
+  ],
+  "reserved_test_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "retuned_per_feature_group": false,
+  "independent_test": false,
+  "publication_delays_modelled": false
+}

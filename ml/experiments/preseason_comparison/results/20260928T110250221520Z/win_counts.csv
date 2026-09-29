@@ -1,0 +1,17 @@
+crop,model,folds,beats_baseline_mae,beats_v2_mae
+ALL,ridge_expected_tuned,4,4,3
+ALL,v2_actual_train,4,2,0
+ALL,xgb_expected_fixed,4,4,3
+ALL,xgb_expected_tuned,4,4,3
+barley,ridge_expected_tuned,4,4,2
+barley,v2_actual_train,4,4,0
+barley,xgb_expected_fixed,4,4,1
+barley,xgb_expected_tuned,4,4,2
+maize,ridge_expected_tuned,4,3,4
+maize,v2_actual_train,4,1,0
+maize,xgb_expected_fixed,4,2,4
+maize,xgb_expected_tuned,4,4,4
+wheat,ridge_expected_tuned,4,2,3
+wheat,v2_actual_train,4,1,0
+wheat,xgb_expected_fixed,4,3,3
+wheat,xgb_expected_tuned,4,2,3

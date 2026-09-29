@@ -12,7 +12,13 @@ from ml.scenarios.weather_scenarios import (
 
 
 ML_DIR = Path(__file__).resolve().parent.parent
-MODEL_FILE = ML_DIR / "models" / "scenario_xgboost.joblib"
+MODEL_FILE = (
+    ML_DIR
+    / "models"
+    / "scenario_xgboost_v2"
+    / "20260929T191958104775Z"
+    / "scenario_xgboost_v2.joblib"
+)
 
 _model_artifact = None
 
@@ -158,4 +164,11 @@ def simulate_yield_scenarios(
         "recent_yield_years": recent_yield_years,
         "soil": soil,
         "scenarios": scenarios,
+        "model_type": artifact["model_type"],
+        "model_version": (
+            f"{artifact.get('model_variant', 'unlabelled')}/"
+            f"{artifact['version']}"
+            if artifact.get("version")
+            else None
+        ),
     }

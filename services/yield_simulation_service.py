@@ -1,5 +1,4 @@
 from ml.data_loader import get_connection
-from ml.scenarios.scenario_service import get_model_artifact
 from services.parcel_simulation_service import simulate_parcel_season
 
 
@@ -54,9 +53,6 @@ def save_simulation_header(
     yield_simulation = result["yield_simulation"]
     soil = result["soil"]
 
-    artifact = get_model_artifact()
-    model_type = artifact["model_type"]
-
     query = """
         INSERT INTO app.yield_simulation (
             parcel_season_id,
@@ -67,18 +63,13 @@ def save_simulation_header(
             soil_clay_pct,
             recent_yield_mean_t_ha,
             model_type,
-            parcel_revision
+            parcel_revision,
+            model_version,
+            recent_yield_years
         )
         VALUES (
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s
+            %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s
         )
         RETURNING id;
     """
@@ -92,16 +83,15 @@ def save_simulation_header(
             soil["soil_ph"],
             soil["soil_soc_g_kg"],
             soil["soil_clay_pct"],
-            yield_simulation[
-                "recent_yield_mean_t_ha"
-            ],
-            model_type,
+            yield_simulation["recent_yield_mean_t_ha"],
+            yield_simulation["model_type"],
             parcel_revision,
+            yield_simulation["model_version"],
+            yield_simulation["recent_yield_years"],
         ),
     )
 
     return cursor.fetchone()[0]
-
 
 def save_scenarios(
     cursor,
@@ -218,7 +208,9 @@ def get_simulation(
                 WHEN ys.parcel_revision = p.revision
                 THEN 'current'
                 ELSE 'outdated'
-            END AS status
+            END AS status,
+            ys.model_version,
+            ys.recent_yield_years
 
         FROM app.yield_simulation ys
 
@@ -303,6 +295,8 @@ def get_simulation(
             float(row[7]),
 
         "model_type": row[8],
+        "model_version": row[18],
+        "recent_yield_years": row[19],
 
         "created_at":
             row[9].isoformat(),
@@ -352,7 +346,9 @@ def list_simulations_for_parcel_season(
                 WHEN ys.parcel_revision = p.revision
                 THEN 'current'
                 ELSE 'outdated'
-            END AS status
+            END AS status,
+            ys.model_version,
+            ys.recent_yield_years
 
         FROM app.yield_simulation ys
 
@@ -398,6 +394,9 @@ def list_simulations_for_parcel_season(
 
             "model_type":
                 row[3],
+
+            "model_version": row[9],
+            "recent_yield_years": row[10],
 
             "parcel_revision_at_run":
                 row[4],
