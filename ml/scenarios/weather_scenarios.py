@@ -94,8 +94,6 @@ def calculate_temperature_scenarios(history, target_year):
     }
 
 
-# Get last 10 -> linear trend -> extrapolation for targer year
-# dry hot: 20.p; expected = avg; wet cool: 80.p
 def calculate_precipitation_scenarios(history):
     recent = history[-PRECIPITATION_HISTORY_YEARS:]
 

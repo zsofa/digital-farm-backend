@@ -142,8 +142,6 @@ def main():
     print("\nTraining V2...")
     model.fit(X, y)
 
-    # These predictions check serialization only.
-    # They are NOT used to estimate predictive accuracy.
     predictions_before_save = model.predict(X)
 
     if not np.isfinite(predictions_before_save).all():
@@ -193,7 +191,6 @@ def main():
         ],
     }
 
-    # Preserve the artifact keys expected by the application.
     artifact = {
         "model": model,
         **metadata,

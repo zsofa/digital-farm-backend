@@ -1,0 +1,10 @@
+{
+  "model_version": "20260929T191958104775Z",
+  "model_variant": "v2",
+  "training_data_sha256_from_artifact": "728293d10283d20eed2d4453a39e41f55533e77e2144ffd219f1987388b5fcbf",
+  "target_season_start_year": 2027,
+  "active_parcels": 5,
+  "training_soil_profiles_in_current_db": 19,
+  "reference": "Current DB training data; not fingerprint-verified against artifact.",
+  "purpose": "Input support and model behaviour audit; NOT parcel yield accuracy."
+}
