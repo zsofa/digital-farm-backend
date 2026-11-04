@@ -8,6 +8,7 @@ from services.parcel_season_service import (
 
 from services.parcel_soil_service import (
     resolve_parcel_soil,
+    get_soilgrids_reference,
 )
 
 from services.parcel_spatial_service import (
@@ -106,11 +107,10 @@ def ensure_farm_owned_by_user(
         )
 
 
-def enrich_parcel(
-    parcel,
-    county_name,
-):
-    soil = resolve_parcel_soil(
+def enrich_parcel(parcel, county_name):
+    soil = resolve_parcel_soil(parcel["id"])
+
+    soilgrids_reference = get_soilgrids_reference(
         parcel["id"]
     )
 
@@ -118,6 +118,7 @@ def enrich_parcel(
         **parcel,
         "county_name": county_name,
         "soil": soil,
+        "soilgrids_reference": soilgrids_reference,
     }
 
 
@@ -251,10 +252,7 @@ def get_parcel(
     )
 
 
-def get_parcel_details(
-    parcel_id,
-    user_id,
-):
+def get_parcel_details(parcel_id, user_id):
     parcel = get_parcel(
         parcel_id,
         user_id,
@@ -268,6 +266,10 @@ def get_parcel_details(
         parcel_id
     )
 
+    soilgrids_reference = get_soilgrids_reference(
+        parcel_id
+    )
+
     seasons = list_parcel_seasons(
         parcel_id,
         user_id,
@@ -277,9 +279,9 @@ def get_parcel_details(
         **parcel,
         "county_name": county_name,
         "soil": soil,
+        "soilgrids_reference": soilgrids_reference,
         "seasons": seasons,
     }
-
 
 def list_parcels(
     farm_id,

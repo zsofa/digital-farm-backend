@@ -15,9 +15,9 @@ def calculate_applied_nitrogen(
 ) -> float:
     quantity = fertilizer_quantity_kg_ha or 0.0
 
-    if quantity < 0:
+    if not math.isfinite(quantity) or quantity < 0:
         raise ValueError(
-            "Fertilizer quantity cannot be negative."
+            "Fertilizer quantity must be finite and non-negative."
         )
 
     if quantity == 0:
@@ -35,9 +35,7 @@ def calculate_applied_nitrogen(
             f"Unsupported fertilizer type: {fertilizer_type}"
         )
 
-    nitrogen_fraction = FERTILIZER_N_FRACTIONS[
-        fertilizer_key
-    ]
+    nitrogen_fraction = FERTILIZER_N_FRACTIONS[fertilizer_key]
 
     return quantity * nitrogen_fraction
 
@@ -47,8 +45,7 @@ def calculate_nitrogen_input_score(
 ) -> float:
     normalized_input = min(
         1.0,
-        applied_nitrogen_kg_ha
-        / N_INPUT_LIMIT_KG_HA,
+        applied_nitrogen_kg_ha / N_INPUT_LIMIT_KG_HA,
     )
 
     return 1.0 - normalized_input
@@ -58,9 +55,9 @@ def calculate_nitrogen_removed(
     expected_yield_t_ha: float,
     crop: str,
 ) -> float:
-    if expected_yield_t_ha < 0:
+    if not math.isfinite(expected_yield_t_ha) or expected_yield_t_ha < 0:
         raise ValueError(
-            "Expected yield cannot be negative."
+            "Expected yield must be finite and non-negative."
         )
 
     crop_key = crop.lower()
@@ -70,9 +67,8 @@ def calculate_nitrogen_removed(
             f"Unsupported crop: {crop}"
         )
 
-    removal_factor = CROP_N_REMOVAL_FACTORS[
-        crop_key
-    ]
+    # Harvested grain only; straw and other crop residues are excluded.
+    removal_factor = CROP_N_REMOVAL_FACTORS[crop_key]
 
     return expected_yield_t_ha * removal_factor
 
@@ -81,10 +77,7 @@ def calculate_nitrogen_balance(
     applied_nitrogen_kg_ha: float,
     removed_nitrogen_kg_ha: float,
 ) -> float:
-    return (
-        applied_nitrogen_kg_ha
-        - removed_nitrogen_kg_ha
-    )
+    return applied_nitrogen_kg_ha - removed_nitrogen_kg_ha
 
 
 def calculate_nitrogen_balance_score(
@@ -93,14 +86,12 @@ def calculate_nitrogen_balance_score(
     if nitrogen_balance_kg_ha >= 0:
         risk = min(
             1.0,
-            nitrogen_balance_kg_ha
-            / N_SURPLUS_LIMIT_KG_HA,
+            nitrogen_balance_kg_ha / N_SURPLUS_LIMIT_KG_HA,
         )
     else:
         risk = min(
             1.0,
-            abs(nitrogen_balance_kg_ha)
-            / N_DEFICIT_LIMIT_KG_HA,
+            abs(nitrogen_balance_kg_ha) / N_DEFICIT_LIMIT_KG_HA,
         )
 
     return 1.0 - risk
@@ -110,9 +101,18 @@ def calculate_nitrogen_score(
     input_score: float,
     balance_score: float,
 ) -> float:
-    return math.sqrt(
-        input_score * balance_score
-    )
+    return math.sqrt(input_score * balance_score)
+
+
+def calculate_nitrogen_removal_ratio(
+    applied_nitrogen_kg_ha: float,
+    removed_nitrogen_kg_ha: float,
+) -> float | None:
+    """Estimated grain N removal relative to fertilizer N input (%)."""
+    if applied_nitrogen_kg_ha <= 0:
+        return None
+
+    return removed_nitrogen_kg_ha / applied_nitrogen_kg_ha * 100.0
 
 
 def calculate_nitrogen_metrics(
@@ -153,6 +153,10 @@ def calculate_nitrogen_metrics(
         "applied_nitrogen_kg_ha": applied_nitrogen,
         "removed_nitrogen_kg_ha": removed_nitrogen,
         "nitrogen_balance_kg_ha": balance,
+        "nitrogen_removal_ratio_pct": calculate_nitrogen_removal_ratio(
+            applied_nitrogen,
+            removed_nitrogen,
+        ),
         "nitrogen_input_score": input_score,
         "nitrogen_balance_score": balance_score,
         "nitrogen_score": nitrogen_score,

@@ -7,6 +7,7 @@ import rasterio
 from pyproj import CRS
 from rasterio.mask import mask
 from shapely import wkt
+from decimal import Decimal, InvalidOperation
 
 from ml.data_loader import get_connection
 
@@ -469,28 +470,110 @@ def soil_input_changed(
 
     return False
 
+def get_soilgrids_reference(parcel_id):
+    query = """
+        SELECT
+            soil_ph,
+            soil_soc_g_kg,
+            soil_clay_pct
+        FROM app.parcel_soil
+        WHERE parcel_id = %s
+          AND source = 'soilgrids'
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1;
+    """
+
+    connection = get_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (parcel_id,))
+            row = cursor.fetchone()
+    finally:
+        connection.close()
+
+    if row is None:
+        return None
+
+    return {
+        "source": "soilgrids",
+        "soil_ph": (
+            float(row[0]) if row[0] is not None else None
+        ),
+        "soil_soc_g_kg": (
+            float(row[1]) if row[1] is not None else None
+        ),
+        "soil_clay_pct": (
+            float(row[2]) if row[2] is not None else None
+        ),
+        "measured_at": None,
+    }
+
+
+def validate_soilgrids_deviation(parcel_id, soil):
+    reference = get_soilgrids_reference(parcel_id)
+
+    if reference is None:
+        raise ValueError(
+            "SoilGrids reference data is unavailable. "
+            "The measurement cannot be saved."
+        )
+
+    fields = {
+        "soil_ph": "Soil pH",
+        "soil_soc_g_kg": "Soil organic carbon",
+        "soil_clay_pct": "Clay content",
+    }
+
+    errors = []
+
+    for field, label in fields.items():
+        try:
+            baseline = Decimal(str(reference.get(field)))
+            value = Decimal(str(soil.get(field)))
+        except (InvalidOperation, TypeError, ValueError):
+            raise ValueError(
+                f"{label}: a valid value and SoilGrids "
+                "reference are required."
+            ) from None
+
+        if (
+            not baseline.is_finite()
+            or baseline < 0
+            or not value.is_finite()
+        ):
+            raise ValueError(
+                f"{label}: a valid value and SoilGrids "
+                "reference are required."
+            )
+
+        allowed_difference = baseline * Decimal("0.15")
+
+        if abs(value - baseline) > allowed_difference:
+            errors.append(
+                f"{label} cannot differ from the SoilGrids "
+                "value by more than 15%."
+            )
+
+    if errors:
+        raise ValueError(" ".join(errors))
 
 def save_user_soil(
     parcel_id,
     data,
 ):
-    validated = (
-        validate_user_soil_data(
-            data
-        )
+    validated = validate_user_soil_data(data)
+
+    current_soil = resolve_parcel_soil(parcel_id)
+
+    validate_soilgrids_deviation(
+        parcel_id,
+        validated,
     )
 
-    current_soil = (
-        resolve_parcel_soil(
-            parcel_id
-        )
-    )
-
-    revision_changed = (
-        soil_input_changed(
-            current_soil,
-            validated,
-        )
+    revision_changed = soil_input_changed(
+        current_soil,
+        validated,
     )
 
     connection = get_connection()
