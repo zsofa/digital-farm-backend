@@ -7,7 +7,7 @@ from ml.scenarios.scenario_service import simulate_yield_scenarios
 
 
 ML_DIR = Path(__file__).resolve().parent.parent
-RESULTS_DIR = ML_DIR / "results"
+RESULTS_DIR = Path(__file__).resolve().parent / "results" / "scenario_checks"
 
 RESULTS_FILE = RESULTS_DIR / "scenario_sanity_check.csv"
 WARNINGS_FILE = RESULTS_DIR / "scenario_sanity_warnings.csv"

@@ -13,7 +13,7 @@ from ml.scenarios.scenario_service import (
     get_model_artifact, calculate_recent_yield, load_county_soil,
 )
 from ml.scenarios.weather_scenarios import create_weather_scenarios
-from archive.ml.train.train_scenario_xgboost import load_dataset
+from ml.training.dataset import load_dataset
 
 SOIL = ['soil_ph', 'soil_soc_g_kg', 'soil_clay_pct']
 NUMERIC = [c for c in SCENARIO_FEATURE_COLUMNS if c != 'crop']
@@ -129,7 +129,7 @@ def main():
                                     'soil_replacement_difference': float(predicted[0] - predicted[1])})
             except (ValueError, TypeError) as error:
                 issues.append({'parcel_id': pid, 'crop': crop, 'issue': str(error)})
-    directory = Path(__file__).resolve().parent / 'results' / datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+    directory = Path(__file__).resolve().parent / 'results' / 'parcel_inputs' / datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     directory.mkdir(parents=True, exist_ok=False)
     frames = {'input_ranges': pd.DataFrame(ranges), 'soil_replacement': pd.DataFrame(changes),
               'soil_distance': pd.DataFrame(distances),
