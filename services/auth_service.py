@@ -1,7 +1,6 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ml.data_loader import get_connection
-
+from db.connection import get_connection
 
 def user_row_to_dict(row):
     return {

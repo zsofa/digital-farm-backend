@@ -5,5 +5,7 @@ SCENARIO_FEATURE_COLUMNS = [
     "soil_clay_pct",
     "season_temperature_c",
     "season_precipitation_mm",
-    "recent_yield_mean_t_ha",
+    "recent_yield_mean_t_ha"
 ]
+
+TARGET_COLUMN = "average_yield_t_ha"

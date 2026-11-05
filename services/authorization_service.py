@@ -1,4 +1,4 @@
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 
 def ensure_parcel_owned_by_user(parcel_id, user_id):

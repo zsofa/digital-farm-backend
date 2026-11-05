@@ -1,6 +1,6 @@
 import json
 
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 from services.parcel_season_service import (
     list_parcel_seasons,

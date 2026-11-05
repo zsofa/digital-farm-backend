@@ -1,6 +1,6 @@
 import math
 
-from .config import (
+from .constants import (
     FERTILIZER_EMISSION_FACTORS,
     FERTILIZER_EMISSION_MAX_KG_CO2E_HA,
     GHG_STRATEGY_FACTORS,

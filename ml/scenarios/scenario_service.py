@@ -3,7 +3,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from ml.data_loader import get_connection
+from db.connection import get_connection
 from ml.scenarios.features import SCENARIO_FEATURE_COLUMNS
 from ml.scenarios.weather_scenarios import (
     create_weather_scenarios,

@@ -1,4 +1,4 @@
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 from services.authorization_service import (
     ensure_parcel_owned_by_user,

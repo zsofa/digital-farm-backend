@@ -9,7 +9,7 @@ from rasterio.mask import mask
 from shapely import wkt
 from decimal import Decimal, InvalidOperation
 
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent

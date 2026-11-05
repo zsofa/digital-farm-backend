@@ -1,4 +1,4 @@
-from ml.data_loader import get_connection
+from db.connection import get_connection
 from ml.scenarios.scenario_service import (
     simulate_yield_scenarios,
 )

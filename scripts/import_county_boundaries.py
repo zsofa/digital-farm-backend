@@ -1,7 +1,7 @@
 from pathlib import Path
 import geopandas as gpd
 
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 
 GEOJSON_FILE = Path("data/raw/geography/NUTS_RG_01M_2024_4326.geojson")

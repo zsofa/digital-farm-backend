@@ -3,7 +3,7 @@ from datetime import date
 
 import numpy as np
 
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 
 TEMPERATURE_HISTORY_YEARS = 15

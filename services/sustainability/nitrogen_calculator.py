@@ -1,6 +1,6 @@
 import math
 
-from .config import (
+from .constants import (
     CROP_N_REMOVAL_FACTORS,
     FERTILIZER_N_FRACTIONS,
     N_DEFICIT_LIMIT_KG_HA,

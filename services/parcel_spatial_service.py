@@ -7,7 +7,7 @@ from pyproj import CRS
 from rasterio.mask import mask
 from shapely import wkt
 import json
-from ml.data_loader import get_connection
+from db.connection import get_connection
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent

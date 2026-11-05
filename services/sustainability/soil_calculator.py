@@ -1,4 +1,4 @@
-from .config import (
+from .constants import (
     CLAY_HIGH_PCT,
     CLAY_LOW_PCT,
     CLAY_MIN_SCORE,

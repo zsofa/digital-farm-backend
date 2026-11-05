@@ -1,4 +1,4 @@
-from ml.data_loader import get_connection
+from db.connection import get_connection
 from services.parcel_simulation_service import simulate_parcel_season
 
 
