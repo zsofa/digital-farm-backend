@@ -2,6 +2,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from db.connection import get_connection
 
+
+class EmailAlreadyRegistered(ValueError):
+    pass
+
+
 def user_row_to_dict(row):
     return {
         "id": row[0],
@@ -10,6 +15,15 @@ def user_row_to_dict(row):
         "email": row[3],
         "created_at": row[4].isoformat(),
     }
+
+
+def email_exists(email):
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT EXISTS (SELECT 1 FROM app.user WHERE email = %s)",
+            (email.strip().lower(),),
+        )
+        return cursor.fetchone()[0]
 
 
 def register_user(data):
@@ -28,96 +42,55 @@ def register_user(data):
         raise ValueError("Email is required.")
 
     if len(password) < 8:
-        raise ValueError(
-            "Password must contain at least 8 characters."
+        raise ValueError("Password must contain at least 8 characters.")
+
+    password_hash = generate_password_hash(password)
+
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO app.user (
+                first_name,
+                last_name,
+                email,
+                password_hash
+            )
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (email) DO NOTHING
+            RETURNING id, first_name, last_name, email, created_at;
+            """,
+            (first_name, last_name, email, password_hash),
         )
 
-    connection = get_connection()
+        row = cursor.fetchone()
 
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT id
-                FROM app.user
-                WHERE email = %s;
-                """,
-                (email,),
+        if row is None:
+            raise EmailAlreadyRegistered(
+                "A user with this email already exists."
             )
-
-            if cursor.fetchone() is not None:
-                raise ValueError(
-                    "A user with this email already exists."
-                )
-
-            password_hash = generate_password_hash(password)
-
-            cursor.execute(
-                """
-                INSERT INTO app.user (
-                    first_name,
-                    last_name,
-                    email,
-                    password_hash
-                )
-                VALUES (%s, %s, %s, %s)
-                RETURNING
-                    id,
-                    first_name,
-                    last_name,
-                    email,
-                    created_at;
-                """,
-                (
-                    first_name,
-                    last_name,
-                    email,
-                    password_hash,
-                ),
-            )
-
-            row = cursor.fetchone()
-
-        connection.commit()
-
-    except Exception:
-        connection.rollback()
-        raise
-
-    finally:
-        connection.close()
 
     return user_row_to_dict(row)
 
 
 def authenticate_user(email, password):
-    email = email.strip().lower()
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                first_name,
+                last_name,
+                email,
+                password_hash,
+                created_at
+            FROM app.user
+            WHERE email = %s;
+            """,
+            (email.strip().lower(),),
+        )
+        row = cursor.fetchone()
 
-    query = """
-        SELECT
-            id,
-            first_name,
-            last_name,
-            email,
-            password_hash,
-            created_at
-        FROM app.user
-        WHERE email = %s;
-    """
-
-    connection = get_connection()
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, (email,))
-            row = cursor.fetchone()
-    finally:
-        connection.close()
-
-    if row is None:
-        raise ValueError("Invalid email or password.")
-
-    if not check_password_hash(row[4], password):
+    if row is None or not check_password_hash(row[4], password):
         raise ValueError("Invalid email or password.")
 
     return {

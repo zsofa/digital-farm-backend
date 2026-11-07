@@ -4,39 +4,22 @@ from services.parcel_simulation_service import simulate_parcel_season
 
 def get_parcel_simulation_context(parcel_season_id):
     query = """
-        SELECT
-            p.id,
-            p.revision,
-            p.is_active
+        SELECT p.id, p.revision, p.is_active
         FROM app.parcel_season ps
-        JOIN app.parcel p
-          ON p.id = ps.parcel_id
+        JOIN app.parcel p ON p.id = ps.parcel_id
         WHERE ps.id = %s;
     """
 
-    connection = get_connection()
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                query,
-                (parcel_season_id,),
-            )
-
-            row = cursor.fetchone()
-
-    finally:
-        connection.close()
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(query, (parcel_season_id,))
+        row = cursor.fetchone()
 
     if row is None:
-        raise ValueError(
-            f"Parcel season not found: {parcel_season_id}"
-        )
+        raise ValueError(f"Parcel season not found: {parcel_season_id}")
 
     if not row[2]:
         raise ValueError(
-            "Yield simulations cannot be created "
-            "for an inactive parcel."
+            "Yield simulations cannot be created for an inactive parcel."
         )
 
     return {
@@ -45,15 +28,12 @@ def get_parcel_simulation_context(parcel_season_id):
     }
 
 
-def save_simulation_header(
-    cursor,
-    result,
-    parcel_revision,
-):
+def save_simulation_header(cursor, result, parcel_revision):
     yield_simulation = result["yield_simulation"]
     soil = result["soil"]
 
-    query = """
+    cursor.execute(
+        """
         INSERT INTO app.yield_simulation (
             parcel_season_id,
             county_name,
@@ -67,15 +47,9 @@ def save_simulation_header(
             model_version,
             recent_yield_years
         )
-        VALUES (
-            %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s
-        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id;
-    """
-
-    cursor.execute(
-        query,
+        """,
         (
             result["season"]["id"],
             result["parcel"]["county_name"],
@@ -93,15 +67,8 @@ def save_simulation_header(
 
     return cursor.fetchone()[0]
 
-def save_scenarios(
-    cursor,
-    simulation_id,
-    result,
-):
-    scenarios = (
-        result["yield_simulation"]["scenarios"]
-    )
 
+def save_scenarios(cursor, simulation_id, result):
     query = """
         INSERT INTO app.yield_simulation_scenario (
             simulation_id,
@@ -111,17 +78,10 @@ def save_scenarios(
             predicted_yield_t_ha,
             estimated_total_t
         )
-        VALUES (
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s
-        );
+        VALUES (%s, %s, %s, %s, %s, %s);
     """
 
-    for scenario_name, scenario in scenarios.items():
+    for scenario_name, scenario in result["yield_simulation"]["scenarios"].items():
         cursor.execute(
             query,
             (
@@ -135,91 +95,56 @@ def save_scenarios(
         )
 
 
-def create_yield_simulation(
-    parcel_season_id,
-):
-    context = get_parcel_simulation_context(
-        parcel_season_id
-    )
+def create_yield_simulation(parcel_season_id):
+    context = get_parcel_simulation_context(parcel_season_id)
+    result = simulate_parcel_season(parcel_season_id)
 
-    result = simulate_parcel_season(
-        parcel_season_id
-    )
+    with get_connection() as connection, connection.cursor() as cursor:
+        simulation_id = save_simulation_header(
+            cursor,
+            result,
+            context["parcel_revision"],
+        )
+        save_scenarios(cursor, simulation_id, result)
 
-    connection = get_connection()
-
-    try:
-        with connection.cursor() as cursor:
-            simulation_id = save_simulation_header(
-                cursor,
-                result,
-                context["parcel_revision"],
-            )
-
-            save_scenarios(
-                cursor,
-                simulation_id,
-                result,
-            )
-
-        connection.commit()
-
-    except Exception:
-        connection.rollback()
-        raise
-
-    finally:
-        connection.close()
-
-    return {
-        "simulation_id": simulation_id,
-    }
+    return {"simulation_id": simulation_id}
 
 
-def get_simulation(
-    simulation_id,
-):
+def get_simulation(simulation_id):
     query = """
         SELECT
             ys.id,
             ys.parcel_season_id,
             ys.county_name,
-
             ys.soil_source,
             ys.soil_ph,
             ys.soil_soc_g_kg,
             ys.soil_clay_pct,
-
             ys.recent_yield_mean_t_ha,
             ys.model_type,
             ys.created_at,
-
             ys.parcel_revision,
             p.revision AS current_parcel_revision,
-
             ps.season_start_year,
             ps.crop,
-
             p.id AS parcel_id,
             p.name AS parcel_name,
             p.official_area_ha,
-
             CASE
-                WHEN ys.parcel_revision = p.revision
-                THEN 'current'
+                WHEN ys.parcel_revision = p.revision THEN 'current'
                 ELSE 'outdated'
             END AS status,
             ys.model_version,
-            ys.recent_yield_years
-
+            ys.recent_yield_years,
+            (
+                SELECT COUNT(*)
+                FROM app.yield_simulation previous
+                WHERE previous.parcel_season_id = ys.parcel_season_id
+                  AND (previous.created_at, previous.id) <= (ys.created_at, ys.id)
+            ) AS simulation_number
         FROM app.yield_simulation ys
-
-        JOIN app.parcel_season ps
-          ON ps.id = ys.parcel_season_id
-
-        JOIN app.parcel p
-          ON p.id = ps.parcel_id
-
+        JOIN app.parcel_season ps ON ps.id = ys.parcel_season_id
+        JOIN app.parcel p ON p.id = ps.parcel_id
         WHERE ys.id = %s;
     """
 
@@ -234,102 +159,59 @@ def get_simulation(
         WHERE simulation_id = %s;
     """
 
-    connection = get_connection()
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(query, (simulation_id,))
+        row = cursor.fetchone()
 
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                query,
-                (simulation_id,),
-            )
+        if row is None:
+            raise ValueError(f"Yield simulation not found: {simulation_id}")
 
-            row = cursor.fetchone()
-
-            if row is None:
-                raise ValueError(
-                    "Yield simulation not found: "
-                    f"{simulation_id}"
-                )
-
-            cursor.execute(
-                scenario_query,
-                (simulation_id,),
-            )
-
-            scenario_rows = cursor.fetchall()
-
-    finally:
-        connection.close()
+        cursor.execute(scenario_query, (simulation_id,))
+        scenario_rows = cursor.fetchall()
 
     scenarios = {}
 
     for scenario in scenario_rows:
         scenarios[scenario[0]] = {
-            "temperature_c":
-                float(scenario[1]),
-
-            "precipitation_mm":
-                float(scenario[2]),
-
-            "predicted_yield_t_ha":
-                float(scenario[3]),
-
-            "estimated_total_t":
-                float(scenario[4]),
+            "temperature_c": float(scenario[1]),
+            "precipitation_mm": float(scenario[2]),
+            "predicted_yield_t_ha": float(scenario[3]),
+            "estimated_total_t": float(scenario[4]),
         }
 
     return {
         "simulation_id": row[0],
+        "simulation_number": row[20],
         "parcel_season_id": row[1],
-
         "county_name": row[2],
-
         "soil": {
             "source": row[3],
             "soil_ph": float(row[4]),
             "soil_soc_g_kg": float(row[5]),
             "soil_clay_pct": float(row[6]),
         },
-
-        "recent_yield_mean_t_ha":
-            float(row[7]),
-
+        "recent_yield_mean_t_ha": float(row[7]),
         "model_type": row[8],
         "model_version": row[18],
         "recent_yield_years": row[19],
-
-        "created_at":
-            row[9].isoformat(),
-
-        "parcel_revision_at_run":
-            row[10],
-
-        "current_parcel_revision":
-            row[11],
-
+        "created_at": row[9].isoformat(),
+        "parcel_revision_at_run": row[10],
+        "current_parcel_revision": row[11],
         "status": row[17],
-
         "season": {
-            "season_start_year":
-                row[12],
-            "crop":
-                row[13],
+            "season_start_year": row[12],
+            "crop": row[13],
         },
-
         "parcel": {
             "id": row[14],
             "name": row[15],
-            "official_area_ha":
-                float(row[16]),
+            "official_area_ha": float(row[16]),
         },
-
         "scenarios": scenarios,
     }
 
 
-def list_simulations_for_parcel_season(
-    parcel_season_id,
-):
+def list_simulations_for_parcel_season(parcel_season_id):
     query = """
         SELECT
             ys.id,
@@ -338,86 +220,45 @@ def list_simulations_for_parcel_season(
             ys.model_type,
             ys.parcel_revision,
             p.revision,
-
             expected.predicted_yield_t_ha,
             expected.estimated_total_t,
-
             CASE
-                WHEN ys.parcel_revision = p.revision
-                THEN 'current'
+                WHEN ys.parcel_revision = p.revision THEN 'current'
                 ELSE 'outdated'
             END AS status,
             ys.model_version,
-            ys.recent_yield_years
-
+            ys.recent_yield_years,
+            ROW_NUMBER() OVER (
+                ORDER BY ys.created_at, ys.id
+            ) AS simulation_number
         FROM app.yield_simulation ys
-
-        JOIN app.parcel_season ps
-          ON ps.id = ys.parcel_season_id
-
-        JOIN app.parcel p
-          ON p.id = ps.parcel_id
-
+        JOIN app.parcel_season ps ON ps.id = ys.parcel_season_id
+        JOIN app.parcel p ON p.id = ps.parcel_id
         LEFT JOIN app.yield_simulation_scenario expected
           ON expected.simulation_id = ys.id
          AND expected.scenario = 'expected'
-
         WHERE ys.parcel_season_id = %s
-
-        ORDER BY ys.created_at DESC;
+        ORDER BY ys.created_at DESC, ys.id DESC;
     """
 
-    connection = get_connection()
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                query,
-                (parcel_season_id,),
-            )
-
-            rows = cursor.fetchall()
-
-    finally:
-        connection.close()
+    with get_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(query, (parcel_season_id,))
+        rows = cursor.fetchall()
 
     return [
         {
-            "simulation_id":
-                row[0],
-
-            "created_at":
-                row[1].isoformat(),
-
-            "recent_yield_mean_t_ha":
-                float(row[2]),
-
-            "model_type":
-                row[3],
-
+            "simulation_id": row[0],
+            "simulation_number": row[11],
+            "created_at": row[1].isoformat(),
+            "recent_yield_mean_t_ha": float(row[2]),
+            "model_type": row[3],
             "model_version": row[9],
             "recent_yield_years": row[10],
-
-            "parcel_revision_at_run":
-                row[4],
-
-            "current_parcel_revision":
-                row[5],
-
-            "expected_yield_t_ha": (
-                float(row[6])
-                if row[6] is not None
-                else None
-            ),
-
-            "expected_total_t": (
-                float(row[7])
-                if row[7] is not None
-                else None
-            ),
-
-            "status":
-                row[8],
+            "parcel_revision_at_run": row[4],
+            "current_parcel_revision": row[5],
+            "expected_yield_t_ha": float(row[6]) if row[6] is not None else None,
+            "expected_total_t": float(row[7]) if row[7] is not None else None,
+            "status": row[8],
         }
         for row in rows
     ]
